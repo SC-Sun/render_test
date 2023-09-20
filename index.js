@@ -21,11 +21,18 @@ app.use(express.urlencoded({extended: true}))
 app.use(express.static('build'))
 app.use(cors())
 
-morgan.token('ps', function (req) {
-  return `${JSON.stringify(req.body)}`
-})
+morgan.token('body', (req,res) =>  req.method === 'POST' ? JSON.stringify(req.body) : "")
+app.use(morgan(function (tokens, req, res) {
+  return [
+    tokens.method(req, res),
+    tokens.url(req, res),
+    tokens.status(req, res),
+    tokens.res(req, res, 'content-length'), '-',
+    tokens['response-time'](req, res), 'ms',
+   
+  ].join(' ')
+}))
 
-app.use(morgan(':method :url :status :response-time :req[header] :ps'))
  
 let persons = [
   {
@@ -67,46 +74,40 @@ app.get("/info", (req, res) => {
 
 app.get("/api/persons/:id", (req, res) => {
   const id = Number(req.params.id);
-  const person = persons.find((person) => {
-    return person.id === id;
-  });
+  const person = persons.find((person) => id === person.id )
+  
   if (person) res.json(person);
   else {
     res.status(404).end();
   }
 });
 
-const generateId = () => {
-  const maxId = persons.length > 0 ? Math.random(...persons.map((p) => p.id)) : 0;
-  return maxId + 1;
-};
-
+const generateId = () => Math.floor(Math.random() * 10000000 +1)
  
-  
 
 app.post("/api/persons", (req, res) => {
   const body = req.body;
-  let person = {
+  const person = {
     number: body.number,
    id:  generateId(),
     name: body.name,
   }
- if (!body.name && !body.number) {
+ if (!body.name || !body.number) {
     return res.status(400).json({
       error: "the name or number is missing",
     })
   }
-  if(body.name === persons.name) {
+  const foundPerson = persons.find(person => person.name === body.name)
+  if(foundPerson) {
     return res.status(400).json({
       error: 'name must be unique'
     })
     
   }  
-  // Math.floor(Math.random() * Number.MAX_SAFE_INTEGER),
    
- 
   
-  persons.push(person)
+  
+ persons = persons.concat(person)
    res.json(person)
     
   
@@ -126,3 +127,5 @@ app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
 
+
+ 
