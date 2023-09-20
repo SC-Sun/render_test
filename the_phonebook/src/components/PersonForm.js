@@ -1,0 +1,23 @@
+const PersonForm = ({
+  handleSubmit,
+  handleNewName,
+  newName,
+  handleNumber,
+  newNumber,
+}) => {
+  return (
+    <form onSubmit={handleSubmit}>
+      <div>
+        name: <input value={newName} onChange={handleNewName} />
+      </div>
+      <div>
+        number: <input value={newNumber} onChange={handleNumber} />
+      </div>
+      <div>
+        <button type="submit">add</button>
+      </div>
+    </form>
+  );
+};
+
+export default PersonForm;
