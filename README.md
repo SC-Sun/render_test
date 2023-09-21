@@ -1,1 +1,1 @@
-# render_test Phonebook-frontend and backend
+# render_test Phonebook-backend
